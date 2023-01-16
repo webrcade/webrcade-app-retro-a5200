@@ -1,0 +1,136 @@
+.controllers-screen {
+  position: absolute;
+  display: flex;
+  z-index: 51;
+  top: 0px;
+  right: 0px;
+  left: 0px;
+  bottom: 0px;
+  align-items: center;
+
+  &-inner {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    max-width: 1920px;
+    margin: 0 auto;
+    position: relative;
+
+    &-controllers {
+      display: flex;
+      flex-flow: row;
+      justify-content: space-between;
+    }
+  }
+}
+
+.controller {
+  display: flex;
+  flex-direction: column;
+  margin: 1.5rem 3rem;
+  background-repeat: no-repeat;
+  background-size: 12rem;
+  width: 12rem;
+  height: 95vh;
+  // border: 1px solid red;
+
+  &-row {
+    display: flex;
+    flex-direction: row;
+    margin-left: 2.5rem;
+
+    &-button {
+      margin-top: .43rem;
+      margin-right: .16rem;
+    }
+
+    &-button-top {
+      margin-right: .2rem;
+    }
+  }
+
+  &-first-row {
+    margin-top: .2rem;
+    margin-left: 1.8rem;
+  }
+
+  &-second-row {
+    margin-top: 14rem;
+  }
+
+  &-description-row {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-left: .8rem;
+    margin-right: .8rem;
+    overflow: hidden;
+    white-space: nowrap;
+    display: block;
+    text-overflow: ellipsis;
+    text-align: center;
+    opacity: 0;
+  }
+}
+
+.controller-image-button {
+  // Fix issue on Android where iframe is blue on exit
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  border: 0;
+  padding: 0;
+  margin: 0;
+  width: 2.25rem;
+  height: 1.8rem;
+  border-radius: .16rem;
+  background-color: transparent;
+  color: white;
+  cursor: pointer;
+  outline: none;
+  overflow: hidden;
+  opacity: .6;
+  // border: 1px solid red;
+
+  &-top {
+    width: 2.75rem;
+  }
+
+  &>div {
+    // height: 4.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // &:focus:not(:hover) {
+  &:focus {
+    outline: none;
+    //background-color: #292929;
+    background-color: red;
+    transition: 0.4s;
+    opacity: .5;
+    // opacity: .8;
+  }
+
+  @media (hover) {
+    &:hover {
+      outline: none;
+      background-color: #292929;
+      transition: 0.4s;
+      opacity: .8;
+    }
+
+    &:hover:focus {
+      opacity: .75;
+      transition: 0.4s;
+      background-color: #191919;
+    }
+  }
+
+  &:active {
+    outline: none;
+  }
+}
+
+.description-fade-in {
+  opacity: 1;
+  transition: opacity .35s ease-in;
+}
+

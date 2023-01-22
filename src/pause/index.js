@@ -13,7 +13,7 @@ import {
   Resources,
   SaveStatesEditor,
   SaveWhiteImage,
-  SegaCdBackground,
+  A5200Background,
   TEXT_IDS,
 } from '@webrcade/app-common';
 
@@ -108,7 +108,7 @@ export class EmulatorPauseScreen extends Component {
       );
     }
 
-    const gamepad = <GamepadControlsTab />;
+    const gamepad = <GamepadControlsTab emulator={emulator} />;
     const gamepadLabel = Resources.getText(TEXT_IDS.GAMEPAD_CONTROLS);
 
     return (
@@ -136,7 +136,7 @@ export class EmulatorPauseScreen extends Component {
               {
                 image: KeyboardWhiteImage,
                 label: Resources.getText(TEXT_IDS.KEYBOARD_CONTROLS),
-                content: <KeyboardControlsTab />,
+                content: <KeyboardControlsTab emulator={emulator} />,
               },
             ]}
           />
@@ -149,7 +149,7 @@ export class EmulatorPauseScreen extends Component {
         ) : null}
         {mode === ModeEnum.STATE ? (
           <SaveStatesEditor
-            emptyImageSrc={SegaCdBackground}
+            emptyImageSrc={A5200Background}
             emulator={emulator}
             onClose={closeCallback}
             showStatusCallback={emulator.saveMessageCallback}

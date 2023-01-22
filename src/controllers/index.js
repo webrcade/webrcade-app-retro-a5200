@@ -62,7 +62,18 @@ export class Controller extends Component {
 
         if (r >= 0 && c >= 0) {
           if (descriptions) {
-            description = descriptions[descriptionKey[r][c]]
+            const keyName = descriptionKey[r][c];
+            description = descriptions[keyName]
+            if (!description) {
+              if (keyName === "start") {
+                description = "Start";
+              } else if (keyName === "pause") {
+                description = "Pause";
+              } else if (keyName === "reset") {
+                description = "Reset";
+              }
+            }
+
             if (!description) {
               description = "";
             } else {
@@ -275,8 +286,9 @@ export class ControllersScreen extends Screen {
     this.gamepadNotifier.setImmediateA(true);
     this.state = {
       controllerIndex: null,
-      row: -1,
-      col: -1
+      controllerSwap: false,
+      row: 1,
+      col: 0
     };
   }
 
@@ -290,7 +302,10 @@ export class ControllersScreen extends Screen {
     docElement.addEventListener("keydown", this.handleKeyDownEvent);
 
     if (controllerIndex === null) {
-      this.setState({controllerIndex: this.props.controllerIndex});
+      this.setState({
+        controllerIndex: this.props.controllerIndex,
+        controllerSwap: this.props.controllerSwap
+      });
     }
   }
 
@@ -421,7 +436,7 @@ export class ControllersScreen extends Screen {
 
   render() {
     const { screenContext, screenStyles } = this;
-    const { controllerIndex, row, col } = this.state;
+    const { controllerIndex, controllerSwap, row, col } = this.state;
     const { emulator, descriptions} = this.props;
 
     const onFocusChanged = (r, c) => {
@@ -443,6 +458,15 @@ export class ControllersScreen extends Screen {
       onFocusChanged={onFocusChanged} />
     )
 
+    let cIndex = controllerIndex;
+    if (controllerSwap) {
+      if (cIndex === 0) {
+        cIndex = 1;
+      } else if (cIndex === 1) {
+        cIndex = 0;
+      }
+    }
+
     return (
       <>
         <WebrcadeContext.Provider value={screenContext}>
@@ -450,8 +474,8 @@ export class ControllersScreen extends Screen {
           <div className={"controllers-screen"}>
             <div className={'controllers-screen-inner ' + screenStyles.screen}>
               <div className={"controllers-screen-inner-controllers"}>
-                {controllerIndex === 0 ? controller : <div/>}
-                {controllerIndex === 1 ? controller : <div/>}
+                {cIndex === 0 ? controller : <div/>}
+                {cIndex === 1 ? controller : <div/>}
               </div>
             </div>
           </div>

@@ -2,9 +2,11 @@ import {
   Controller,
   Controllers,
   DisplayLoop,
+  FetchAppData,
   KeyCodeToControlMapping,
   RetroAppWrapper,
   ScriptAudioProcessor,
+  Unzip,
   VisibilityChangeMonitor,
   CIDS,
   LOG,
@@ -137,7 +139,6 @@ export class Emulator extends RetroAppWrapper {
     this.analog = [[0, 0, 0, 0], [0, 0, 0, 0]];
 
     // Set defaults if applicable
-app.mappings = {};
     if (Object.keys(app.mappings).length === 0) {
       this.mappings = {
         "a": "bottomfire",
@@ -200,7 +201,7 @@ app.mappings = {};
     // await this.saveState();
   }
 
-  showControllers(index) {
+  showControllers(index, swap) {
     const { app, controllers } = this;
 
     if (controllers) {
@@ -214,7 +215,7 @@ app.mappings = {};
 
     setTimeout(() => {
       this.showPauseDelay = 0;
-      app.showControllers(index, () => {
+      app.showControllers(index, false /*swap*/, () => {
         if (controllers) {
           controllers.setEnabled(true);
         }
@@ -241,6 +242,22 @@ app.mappings = {};
     const { controllers, keyToControlMapping, mappings } = this;
 
     controllers.poll();
+
+    let swap = false
+    if (this.getProps().swap) {
+      swap = true;
+    }
+
+    let analog = false;
+    if (this.getProps().analog) {
+      analog = true;
+    }
+    const analogToDigital = !analog;
+
+    let twinStick = false;
+    if (this.getProps().twinStick) {
+      twinStick = true;
+    }
 
     for (let i = 0; i < 2; i++) {
 
@@ -289,12 +306,11 @@ app.mappings = {};
           if (this.pause(true)) {
             controllers
               .waitUntilControlReleased(i, CIDS.START)
-              .then(() => this.showControllers(i));
+              .then(() => this.showControllers(i, swap));
             return;
           }
         }
 
-        const analogToDigital = false; // controlsMode !== CONTROLS_DRIVING;
         if (controllers.isControlDown(i, CIDS.UP, analogToDigital)) {
           input |= JST_UP;
         } else if (controllers.isControlDown(i, CIDS.DOWN, analogToDigital)) {
@@ -359,13 +375,53 @@ app.mappings = {};
         }
       }
 
-      this.inputs[i] = input;
-      this.analog[i] = [
-        controllers.getAxisValue(i, 0, true),
-        controllers.getAxisValue(i, 0, false),
-        controllers.getAxisValue(i, 1, true),
-        controllers.getAxisValue(i, 1, false)
-      ];
+      if (twinStick && i === 1) {
+        if (controllers.isAxisLeft(0, 1)) {
+          input |= JST_LEFT;
+        }
+        if (controllers.isAxisRight(0, 1)) {
+          input |= JST_RIGHT;
+        }
+        if (controllers.isAxisUp(0, 1)) {
+          input |= JST_UP;
+        }
+        if (controllers.isAxisDown(0, 1)) {
+          input |= JST_DOWN;
+        }
+      }
+
+      let index = i;
+      if (swap) {
+        if (i === 0) {
+          index = 1;
+        } else if (i === 1) {
+          index = 0;
+        }
+      }
+
+      this.inputs[index] = input;
+
+      if (analog) {
+        const twin = twinStick && i === 1;
+        let daIndex = twin ? 0 : i;
+        let daOffset = twin ? 1 : 0;
+        this.analog[index] = [
+          controllers.getAxisValue(daIndex, daOffset, true),
+          controllers.getAxisValue(daIndex, daOffset, false),
+          controllers.getAxisValue(i, 1, true),
+          controllers.getAxisValue(i, 1, false)
+        ];
+      } else {
+        this.analog[index] = [0, 0, 0, 0];
+      }
+    }
+
+    if (swap) {
+      const kp0 = this.inputs[0] & 0x000F;
+      const kp1 = this.inputs[1] & 0x000F;
+      this.inputs[0] = (this.inputs[0] & 0xFFF0) | kp1;
+      this.inputs[1] = (this.inputs[1] & 0xFFF0) | kp0;
+
     }
   }
 
@@ -375,6 +431,13 @@ app.mappings = {};
   }
 
   getAnalog(index, stick, isX) {
+    // const sens = 0;
+    // const adjust = 1;
+    // if (sens !== 0) {
+    //   // range = .5
+    //   // increment = .5 / 10
+    //   // sens * increment
+    // }
     return this.analog[index][stick * 2 + (isX ? 0 : 1)];
   }
 
@@ -445,7 +508,7 @@ app.mappings = {};
   getCustomStartHandler() {
     return async (emulator) => {
       try {
-        const { Module } = window;
+        const { FS, Module } = window;
         console.log(Module);
         console.log(emulator.uid);
 
@@ -456,10 +519,30 @@ app.mappings = {};
           emulator.loadMessageCallback(null);
         }
 
+        const atariRom = emulator.getProps().atari5200_rom;
+        if (atariRom) {
+          try {
+            // Atari ROM
+            const uz = new Unzip().setDebug(true);
+            const res = await new FetchAppData(atariRom).fetch();
+            let blob = await res.blob();
+            // Unzip it
+            blob = await uz.unzip(blob, ['.bin', '.rom']);
+            // Convert to array buffer
+            const arrayBuffer = await new Response(blob).arrayBuffer();
+            // Write to file system
+            const u8array = new Uint8Array(arrayBuffer);
+            FS.writeFile('/bios.bin', u8array);
+          } catch (e) {
+            LOG.error(e);
+          }
+        }
+
         emulator.initVideo(emulator.canvas);
 
         // Create display loop
         emulator.displayLoop = new DisplayLoop(/*isPal ? 50 :*/ 60, true, emulator.debug);
+        emulator.resizeScreen(emulator.canvas);
 
         // Start the emulator
         var fstart =  Module.cwrap('wrc_start', null, ['string']);

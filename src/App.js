@@ -15,6 +15,21 @@ class App extends WebrcadeRetroApp {
   CONTROLLERS_MODE = "controllers";
 
   createEmulator(app, isDebug) {
+    const { appProps } = this;
+
+    let descriptions = appProps.descriptions;
+    if (!descriptions) {
+      descriptions = {}
+    }
+    this.descriptions = descriptions;
+
+    let mappings = appProps.mappings;
+    if (!mappings) {
+      mappings = {}
+    }
+    this.mappings = mappings;
+    console.log(this.mappings)
+
     return new Emulator(app, isDebug);
   }
 
@@ -39,12 +54,13 @@ class App extends WebrcadeRetroApp {
   }
 
   renderControllersScreen() {
-    const { controllerIndex } = this.state;
+    const { controllerIndex, controllerSwap } = this.state;
     const { CONTROLLERS_MODE, emulator, descriptions } = this;
 
     return (
       <ControllersScreen
         controllerIndex={controllerIndex}
+        controllerSwap={controllerSwap}
         onSelect={(key, keyCode) => {emulator.onKeypad(controllerIndex, key, keyCode)}}
         closeCallback={() => { this.resume(CONTROLLERS_MODE) }}
         descriptions={descriptions}
@@ -70,7 +86,7 @@ class App extends WebrcadeRetroApp {
     );
   }
 
-  showControllers(index, resumeCallback) {
+  showControllers(index, swap, resumeCallback) {
     const { mode } = this.state;
     const { CONTROLLERS_MODE } = this;
 
@@ -78,7 +94,8 @@ class App extends WebrcadeRetroApp {
       this.setState({
         mode: CONTROLLERS_MODE,
         resumeCallback: resumeCallback,
-        controllerIndex: index
+        controllerIndex: index,
+        controllerSwap: swap
       })
       return true;
     }

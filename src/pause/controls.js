@@ -72,6 +72,7 @@ export class GamepadControlsTab extends ControlsTab {
     return (
       <>
         {this.renderControl('start', 'Toggle Keypad Display')}
+        {this.renderControl('select', 'Start')}
         {this.renderControl('dpad', 'Joystick')}
         {aName && this.renderControl('a', aName)}
         {bName && this.renderControl('b', bName)}
@@ -105,6 +106,7 @@ export class KeyboardControlsTab extends ControlsTab {
     return (
       <>
         {this.renderKey('Enter', 'Toggle Keypad Display')}
+        {this.renderKey('ShiftRight', 'Start')}
         {this.renderKey('ArrowUp', 'Joystick Up')}
         {this.renderKey('ArrowDown', 'Joystick Down')}
         {this.renderKey('ArrowLeft', 'Joystick Left')}

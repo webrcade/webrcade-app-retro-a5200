@@ -162,7 +162,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[1][0]}
               onFocus={() => onFocusChanged(1, 0)}
               onClick={(e) => onClick(e, emulator.JST_1)}
-              onMouseEnter={() => updateDescription(0, 0)}
+              onMouseEnter={() => updateDescription(1, 0)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -171,7 +171,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[1][1]}
               onFocus={() => onFocusChanged(1, 1)}
               onClick={(e) => onClick(e, emulator.JST_2)}
-              onMouseEnter={() => updateDescription(0, 1)}
+              onMouseEnter={() => updateDescription(1, 1)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -180,7 +180,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[1][2]}
               onFocus={() => onFocusChanged(1, 2)}
               onClick={(e) => onClick(e, emulator.JST_3)}
-              onMouseEnter={() => updateDescription(0, 2)}
+              onMouseEnter={() => updateDescription(1, 2)}
               onMouseLeave={() => updateDescription(row, col)}
 
             />
@@ -192,7 +192,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[2][0]}
               onFocus={() => onFocusChanged(2, 0)}
               onClick={(e) => onClick(e, emulator.JST_4)}
-              onMouseEnter={() => updateDescription(1, 0)}
+              onMouseEnter={() => updateDescription(2, 0)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -201,7 +201,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[2][1]}
               onFocus={() => onFocusChanged(2, 1)}
               onClick={(e) => onClick(e, emulator.JST_5)}
-              onMouseEnter={() => updateDescription(1, 1)}
+              onMouseEnter={() => updateDescription(2, 1)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -210,7 +210,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[2][2]}
               onFocus={() => onFocusChanged(2, 2)}
               onClick={(e) => onClick(e, emulator.JST_6)}
-              onMouseEnter={() => updateDescription(1, 2)}
+              onMouseEnter={() => updateDescription(2, 2)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -221,7 +221,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[3][0]}
               onFocus={() => onFocusChanged(3, 0)}
               onClick={(e) => onClick(e, emulator.JST_7)}
-              onMouseEnter={() => updateDescription(2, 0)}
+              onMouseEnter={() => updateDescription(3, 0)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -230,7 +230,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[3][1]}
               onFocus={() => onFocusChanged(3, 1)}
               onClick={(e) => onClick(e, emulator.JST_8)}
-              onMouseEnter={() => updateDescription(2, 1)}
+              onMouseEnter={() => updateDescription(3, 1)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -239,7 +239,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[3][2]}
               onFocus={() => onFocusChanged(3, 2)}
               onClick={(e) => onClick(e, emulator.JST_9)}
-              onMouseEnter={() => updateDescription(2, 2)}
+              onMouseEnter={() => updateDescription(3, 2)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -250,7 +250,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[4][0]}
               onFocus={() => onFocusChanged(4, 0)}
               onClick={(e) => onClick(e, emulator.JST_STAR)}
-              onMouseEnter={() => updateDescription(3, 0)}
+              onMouseEnter={() => updateDescription(4, 0)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -259,7 +259,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[4][1]}
               onFocus={() => onFocusChanged(4, 1)}
               onClick={(e) => onClick(e, emulator.JST_0)}
-              onMouseEnter={() => updateDescription(3, 1)}
+              onMouseEnter={() => updateDescription(4, 1)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>
@@ -268,7 +268,7 @@ export class Controller extends Component {
               buttonRef={buttonRefs[4][2]}
               onFocus={() => onFocusChanged(4, 2)}
               onClick={(e) => onClick(e, emulator.JST_POUND)}
-              onMouseEnter={() => updateDescription(3, 2)}
+              onMouseEnter={() => updateDescription(4, 2)}
               onMouseLeave={() => updateDescription(row, col)}
             />
           </div>

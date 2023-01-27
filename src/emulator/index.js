@@ -4,6 +4,7 @@ import {
   DisplayLoop,
   FetchAppData,
   KeyCodeToControlMapping,
+  Resources,
   RetroAppWrapper,
   ScriptAudioProcessor,
   Unzip,
@@ -11,6 +12,7 @@ import {
   CIDS,
   LOG,
   KCODES,
+  TEXT_IDS,
 } from '@webrcade/app-common';
 
 const STATE_FILE_PATH = "/home/web_user/retroarch/userdata/states/game.state";
@@ -293,84 +295,86 @@ export class Emulator extends RetroAppWrapper {
       }
 
       if (!keypadInput) {
-        if (controllers.isControlDown(i, CIDS.ESCAPE)) {
-          if (this.pause(true)) {
-            controllers
-              .waitUntilControlReleased(i, CIDS.ESCAPE)
-              .then(() => this.showPauseMenu());
-            return;
-          }
-        }
-
-        if (controllers.isControlDown(i, CIDS.START)) {
-          if (this.pause(true)) {
-            controllers
-              .waitUntilControlReleased(i, CIDS.START)
-              .then(() => this.showControllers(i, swap));
-            return;
-          }
-        }
-
-        if (controllers.isControlDown(i, CIDS.UP, analogToDigital)) {
-          input |= JST_UP;
-        } else if (controllers.isControlDown(i, CIDS.DOWN, analogToDigital)) {
-          input |= JST_DOWN;
-        }
-
-        if (controllers.isControlDown(i, CIDS.RIGHT, analogToDigital)) {
-          input |= JST_RIGHT;
-        } else if (controllers.isControlDown(i, CIDS.LEFT, analogToDigital)) {
-          input |= JST_LEFT;
-        }
-
-        if (controllers.isControlDown(i, CIDS.SELECT)) {
-          input |= JST_START;
-        }
-
-        let kv = false;
-        for (let b = 0; b < BUTTONS.length; b++) {
-          const button = BUTTONS[b];
-          if (controllers.isControlDown(i, button.cid)) {
-            const mapping = mappings[button.button];
-            if (mapping) {
-              const v = INPUTS[mapping]
-              if (v & 0x000F) {
-                if (kv) {
-                  continue;
-                } else {
-                  kv = true;
-                }
-              }
-              input |= INPUTS[mapping];
+        if (i === 0) {
+          if (controllers.isControlDown(i, CIDS.ESCAPE)) {
+            if (this.pause(true)) {
+              controllers
+                .waitUntilControlReleased(i, CIDS.ESCAPE)
+                .then(() => this.showPauseMenu());
+              return;
             }
           }
-        }
 
-        if (i === 0 && !(input & 0x000F)) {
-          if (keyToControlMapping.isControlDown(DIGIT_0)) {
-            input |= JST_0;
-          } else if (keyToControlMapping.isControlDown(DIGIT_1)) {
-            input |= JST_1;
-          } else if (keyToControlMapping.isControlDown(DIGIT_2)) {
-            input |= JST_2;
-          } else if (keyToControlMapping.isControlDown(DIGIT_3)) {
-            input |= JST_3;
-          } else if (keyToControlMapping.isControlDown(DIGIT_4)) {
-            input |= JST_4;
-          } else if (keyToControlMapping.isControlDown(DIGIT_5)) {
-            input |= JST_5;
-          } else if (keyToControlMapping.isControlDown(DIGIT_6)) {
-            input |= JST_6;
-          } else if (keyToControlMapping.isControlDown(DIGIT_7)) {
-            input |= JST_7;
-          } else if (keyToControlMapping.isControlDown(DIGIT_8)) {
-            input |= JST_8;
-          } else if (keyToControlMapping.isControlDown(DIGIT_9)) {
-            input |= JST_9;
-          } else if (keyToControlMapping.isControlDown(MINUS)) {
-            input |= JST_STAR;
-          } else if (keyToControlMapping.isControlDown(EQUAL)) {
-            input |= JST_POUND;
+          if (controllers.isControlDown(i, CIDS.START)) {
+            if (this.pause(true)) {
+              controllers
+                .waitUntilControlReleased(i, CIDS.START)
+                .then(() => this.showControllers(i, swap));
+              return;
+            }
+          }
+
+          if (controllers.isControlDown(i, CIDS.UP, analogToDigital)) {
+            input |= JST_UP;
+          } else if (controllers.isControlDown(i, CIDS.DOWN, analogToDigital)) {
+            input |= JST_DOWN;
+          }
+
+          if (controllers.isControlDown(i, CIDS.RIGHT, analogToDigital)) {
+            input |= JST_RIGHT;
+          } else if (controllers.isControlDown(i, CIDS.LEFT, analogToDigital)) {
+            input |= JST_LEFT;
+          }
+
+          if (controllers.isControlDown(i, CIDS.SELECT)) {
+            input |= JST_START;
+          }
+
+          let kv = false;
+          for (let b = 0; b < BUTTONS.length; b++) {
+            const button = BUTTONS[b];
+            if (controllers.isControlDown(i, button.cid)) {
+              const mapping = mappings[button.button];
+              if (mapping) {
+                const v = INPUTS[mapping]
+                if (v & 0x000F) {
+                  if (kv) {
+                    continue;
+                  } else {
+                    kv = true;
+                  }
+                }
+                input |= INPUTS[mapping];
+              }
+            }
+          }
+
+          if (i === 0 && !(input & 0x000F)) {
+            if (keyToControlMapping.isControlDown(DIGIT_0)) {
+              input |= JST_0;
+            } else if (keyToControlMapping.isControlDown(DIGIT_1)) {
+              input |= JST_1;
+            } else if (keyToControlMapping.isControlDown(DIGIT_2)) {
+              input |= JST_2;
+            } else if (keyToControlMapping.isControlDown(DIGIT_3)) {
+              input |= JST_3;
+            } else if (keyToControlMapping.isControlDown(DIGIT_4)) {
+              input |= JST_4;
+            } else if (keyToControlMapping.isControlDown(DIGIT_5)) {
+              input |= JST_5;
+            } else if (keyToControlMapping.isControlDown(DIGIT_6)) {
+              input |= JST_6;
+            } else if (keyToControlMapping.isControlDown(DIGIT_7)) {
+              input |= JST_7;
+            } else if (keyToControlMapping.isControlDown(DIGIT_8)) {
+              input |= JST_8;
+            } else if (keyToControlMapping.isControlDown(DIGIT_9)) {
+              input |= JST_9;
+            } else if (keyToControlMapping.isControlDown(MINUS)) {
+              input |= JST_STAR;
+            } else if (keyToControlMapping.isControlDown(EQUAL)) {
+              input |= JST_POUND;
+            }
           }
         }
       }
@@ -402,15 +406,17 @@ export class Emulator extends RetroAppWrapper {
       this.inputs[index] = input;
 
       if (analog) {
-        const twin = twinStick && i === 1;
-        let daIndex = twin ? 0 : i;
-        let daOffset = twin ? 1 : 0;
-        this.analog[index] = [
-          controllers.getAxisValue(daIndex, daOffset, true),
-          controllers.getAxisValue(daIndex, daOffset, false),
-          controllers.getAxisValue(i, 1, true),
-          controllers.getAxisValue(i, 1, false)
-        ];
+        if (i === 0) {
+          const twin = twinStick && i === 1;
+          let daIndex = twin ? 0 : i;
+          let daOffset = twin ? 1 : 0;
+          this.analog[index] = [
+            controllers.getAxisValue(daIndex, daOffset, true),
+            controllers.getAxisValue(daIndex, daOffset, false),
+            controllers.getAxisValue(i, 1, true),
+            controllers.getAxisValue(i, 1, false)
+          ];
+        }
       } else {
         this.analog[index] = [0, 0, 0, 0];
       }
@@ -421,7 +427,6 @@ export class Emulator extends RetroAppWrapper {
       const kp1 = this.inputs[1] & 0x000F;
       this.inputs[0] = (this.inputs[0] & 0xFFF0) | kp1;
       this.inputs[1] = (this.inputs[1] & 0xFFF0) | kp0;
-
     }
   }
 
@@ -546,7 +551,10 @@ export class Emulator extends RetroAppWrapper {
 
         // Start the emulator
         var fstart =  Module.cwrap('wrc_start', null, ['string']);
-        fstart(emulator.game);
+        if (fstart(emulator.game) !== 1) {
+          emulator.app.exit(Resources.getText(TEXT_IDS.ERROR_UNKNOWN));
+          return;
+        }
 
         // frame step method
         const frame = Module._wrc_step;
@@ -565,26 +573,29 @@ export class Emulator extends RetroAppWrapper {
         let audioStarted = 0;
 
         // Start the display loop
-        let error = false;
+        let exit = false;
         emulator.displayLoop.start(() => {
-          emulator.pollControls();
-
-          if (!error) {
-            try {
+          try {
+            if (!exit) {
+              emulator.pollControls();
               frame();
-            } catch (e) {
-              error = true;
-              LOG.error(e);
-            }
-
-            if (audioStarted !== -1) {
-              if (audioStarted > 1) {
-                audioStarted = -1;
-                // Start the audio processor
-                emulator.audioProcessor.start();
-              } else {
-                audioStarted++;
+              if (audioStarted !== -1) {
+                if (audioStarted > 1) {
+                  audioStarted = -1;
+                  // Start the audio processor
+                  emulator.audioProcessor.start();
+                } else {
+                  audioStarted++;
+                }
               }
+            }
+          } catch (e) {
+            if (e.status === 1971) {
+              // Menu was displayed, should never happen (bad rom?)
+              emulator.app.exit(Resources.getText(TEXT_IDS.ERROR_UNKNOWN));
+              exit = true;
+            } else {
+              LOG.error(e);
             }
           }
         });

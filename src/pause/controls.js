@@ -60,6 +60,16 @@ export class GamepadControlsTab extends ControlsTab {
     let descriptions = emulator.getApp().descriptions;
     if (!descriptions) descriptions = {}
 
+    let analog = false;
+    if (emulator.getProps().analog) {
+      analog = true;
+    }
+
+    let twinStick = false;
+    if (emulator.getProps().twinStick) {
+      twinStick = true;
+    }
+
     const aName = getName(emulator, "a", mappings, descriptions);
     const bName = getName(emulator, "b", mappings, descriptions);
     const xName = getName(emulator, "x", mappings, descriptions);
@@ -73,6 +83,8 @@ export class GamepadControlsTab extends ControlsTab {
       <>
         {this.renderControl('start', 'Toggle Keypad Display')}
         {this.renderControl('select', 'Start')}
+        {this.renderControl('lanalog', analog ? 'Joystick (analog)' : 'Joystick')}
+        {twinStick && this.renderControl('ranalog', 'Player 2 Joystick (Twin stick)')}
         {this.renderControl('dpad', 'Joystick')}
         {aName && this.renderControl('a', aName)}
         {bName && this.renderControl('b', bName)}

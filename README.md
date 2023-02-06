@@ -1,26 +1,20 @@
-# webЯcade Applications: Sega CD Emulator
+# webЯcade Application: Atari 5200 Emulator
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-This repository contains [webЯcade](https://www.webrcade.com) applications for the following Sega systems:
+The Atari 5200 application for [webЯcade](https://www.webrcade.com) is an emulator for the [Atari 5200](https://en.wikipedia.org/wiki/Atari_5200) game console.
 
-* [Sega CD](#sega-cd-application)
-
-The underlying emulator is a modified version of the Libretro fork of [Genesis Plus GX](https://github.com/libretro/Genesis-Plus-GX).
-
-## Sega CD Application 
-
-The Sega CD application (also known as Mega-CD) for [webЯcade](https://www.webrcade.com) is an emulator for the [Sega CD (CD-ROM accessory)](https://en.wikipedia.org/wiki/Sega_CD) for the Sega Genesis.
+The underlying emulator is a modified version of the Libretro fork of [a5200](https://github.com/libretro/a5200).
 
 <p align="center">
  <a href="https://play.webrcade.com">
-  <img src="https://docs.webrcade.com/assets/images/apps/segacd.png" width="90%">
+  <img src="https://docs.webrcade.com/assets/images/apps/5200.png" width="90%">
  </a>
 </p>
 
 ### Documentation
 
-The [Sega CD Application Documentation](https://docs.webrcade.com/apps/emulators/segacd/) includes [keyboard](https://docs.webrcade.com/apps/emulators/segacd/#keyboard) and [gamepad](https://docs.webrcade.com/apps/emulators/segacd/#gamepad) control mappings, information related to [RAM Cart and Backup RAM Storage](https://docs.webrcade.com/apps/emulators/genesis/#ram-cart-and-backup-ram-storage) support, and details regarding the use of the emulator within a [webЯcade feed](https://docs.webrcade.com/apps/emulators/segacd/#feed). 
+The [Atari 5200 Application Documentation](https://docs.webrcade.com/apps/emulators/5200/) includes [keyboard](https://docs.webrcade.com/apps/emulators/5200/#keyboard) and [gamepad](https://docs.webrcade.com/apps/emulators/5200/#gamepad) control mappings, and details regarding the use of the emulator within a [webЯcade feed](https://docs.webrcade.com/apps/emulators/5200/#feed). 
 
 ## LICENSE
 
@@ -32,5 +26,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ---
 
-The license presented above is limited to the [webЯcade](https://www.webrcade.com) Sega CD Application. The underlying Libretro Genesis Plus GX project retains its own specific licensing.
-
+The license presented above is limited to the [webЯcade](https://www.webrcade.com) Atari 5200 Application. The underlying Libretro Mednafen a5200 project retains its own specific licensing.

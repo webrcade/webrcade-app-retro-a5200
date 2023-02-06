@@ -14,7 +14,7 @@ The underlying emulator is a modified version of the Libretro fork of [a5200](ht
 
 ### Documentation
 
-The [PC-FX Application Documentation](https://docs.webrcade.com/apps/emulators/pcfx/) includes [keyboard](https://docs.webrcade.com/apps/emulators/pcfx/#keyboard) and [gamepad](https://docs.webrcade.com/apps/emulators/pcfx/#gamepad) control mappings, information related to [Internal and External Backup memory support](https://docs.webrcade.com/apps/emulators/pcfx/#internal-and-external-backup-memory) support, and details regarding the use of the emulator within a [webЯcade feed](https://docs.webrcade.com/apps/emulators/pcfx/#feed). 
+The [Atari 5200 Application Documentation](https://docs.webrcade.com/apps/emulators/5200/) includes [keyboard](https://docs.webrcade.com/apps/emulators/5200/#keyboard) and [gamepad](https://docs.webrcade.com/apps/emulators/5200/#gamepad) control mappings, and details regarding the use of the emulator within a [webЯcade feed](https://docs.webrcade.com/apps/emulators/5200/#feed). 
 
 ## LICENSE
 
@@ -26,4 +26,4 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
 ---
 
-The license presented above is limited to the [webЯcade](https://www.webrcade.com) PC-FX Application. The underlying Libretro Mednafen PC-FX project retains its own specific licensing.
+The license presented above is limited to the [webЯcade](https://www.webrcade.com) Atari 5200 Application. The underlying Libretro Mednafen a5200 project retains its own specific licensing.

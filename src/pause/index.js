@@ -1,10 +1,10 @@
 import React from 'react';
 import { Component } from 'react';
-import { GenPlusGxSettingsEditor } from './settings';
 
 import { GamepadControlsTab, KeyboardControlsTab } from './controls';
 
 import {
+  AppSettingsEditor,
   CustomPauseScreen,
   EditorScreen,
   GamepadWhiteImage,
@@ -13,6 +13,7 @@ import {
   Resources,
   SaveStatesEditor,
   SaveWhiteImage,
+  SettingsAppWhiteImage,
   A5200Background,
   TEXT_IDS,
 } from '@webrcade/app-common';
@@ -79,17 +80,17 @@ export class EmulatorPauseScreen extends Component {
           this.setState({ mode: ModeEnum.CONTROLS });
         }}
       />,
-      // <PauseScreenButton
-      //   imgSrc={SettingsAppWhiteImage}
-      //   buttonRef={ADDITIONAL_BUTTON_REFS[1]}
-      //   label="Sega CD Settings"
-      //   onHandlePad={(focusGrid, e) =>
-      //     focusGrid.moveFocus(e.type, ADDITIONAL_BUTTON_REFS[1])
-      //   }
-      //   onClick={() => {
-      //     this.setState({ mode: ModeEnum.GENPLUSGX_SETTINGS });
-      //   }}
-      // />,
+      <PauseScreenButton
+        imgSrc={SettingsAppWhiteImage}
+        buttonRef={ADDITIONAL_BUTTON_REFS[1]}
+        label="Atari 5200 Settings"
+        onHandlePad={(focusGrid, e) =>
+          focusGrid.moveFocus(e.type, ADDITIONAL_BUTTON_REFS[1])
+        }
+        onClick={() => {
+          this.setState({ mode: ModeEnum.GENPLUSGX_SETTINGS });
+        }}
+      />,
     ]
 
     if (cloudEnabled) {
@@ -142,7 +143,7 @@ export class EmulatorPauseScreen extends Component {
           />
         ) : null}
         {mode === ModeEnum.GENPLUSGX_SETTINGS ? (
-          <GenPlusGxSettingsEditor
+          <AppSettingsEditor
             emulator={emulator}
             onClose={closeCallback}
           />

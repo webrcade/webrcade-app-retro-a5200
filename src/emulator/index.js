@@ -555,6 +555,9 @@ export class Emulator extends RetroAppWrapper {
           emulator.app.exit(Resources.getText(TEXT_IDS.ERROR_UNKNOWN));
           return;
         }
+        // Mark that main has been started
+        this.mainStarted = true;
+        this.resizeScreen(this.canvas);
 
         // frame step method
         const frame = Module._wrc_step;
@@ -605,21 +608,48 @@ export class Emulator extends RetroAppWrapper {
     }
   }
 
-  resizeScreen(canvas) {
-    // Determine the zoom level
-    let zoomLevel = 0;
-    if (this.getProps().zoomLevel) {
-      zoomLevel = this.getProps().zoomLevel;
-    }
+  // resizeScreen(canvas) {
+  //   // Determine the zoom level
+  //   let zoomLevel = 0;
+  //   if (this.getProps().zoomLevel) {
+  //     zoomLevel = this.getProps().zoomLevel;
+  //   }
 
-    const size = 96 + zoomLevel;
-    canvas.style.setProperty('width', `${size}vw`, 'important');
-    canvas.style.setProperty('height', `${size}vh`, 'important');
-    canvas.style.setProperty('max-width', `calc(${size}vh*1.333)`, 'important');
-    canvas.style.setProperty('max-height', `calc(${size}vw*0.75)`, 'important');
+  //   const size = 96 + zoomLevel;
+  //   canvas.style.setProperty('width', `${size}vw`, 'important');
+  //   canvas.style.setProperty('height', `${size}vh`, 'important');
+  //   canvas.style.setProperty('max-width', `calc(${size}vh*1.333)`, 'important');
+  //   canvas.style.setProperty('max-height', `calc(${size}vw*0.75)`, 'important');
+  // }
+
+  // getShotAspectRatio() { return 1.333; }
+
+  getDefaultAspectRatio() {
+    return 1.333;
   }
 
-  getShotAspectRatio() { return 1.333; }
+  resizeScreen(canvas) {
+    this.canvas = canvas;
+    // Determine the zoom level
+    // let zoomLevel = 0;
+    // if (this.getProps().zoomLevel) {
+    //   zoomLevel = this.getProps().zoomLevel;
+    // }
+
+    // const size = 96 + zoomLevel;
+    // canvas.style.setProperty('width', `${size}vw`, 'important');
+    // canvas.style.setProperty('height', `${size}vh`, 'important');
+    // canvas.style.setProperty('max-width', `calc(${size}vh*1.22)`, 'important');
+    // canvas.style.setProperty('max-height', `calc(${size}vw*0.82)`, 'important');
+    this.updateScreenSize();
+  }
+
+  getShotAspectRatio() { return this.getDefaultAspectRatio(); }
+
+  updateBilinearFilter() {
+    const enabled = this.isBilinearFilterEnabled();
+    this.canvas.style.setProperty("image-rendering", (enabled ? 'auto' :  'pixelated'), "important");
+  }
 
   clearImageData(image, imageData, pixelCount) {
     for (var i = 0; i < pixelCount * 4;) {

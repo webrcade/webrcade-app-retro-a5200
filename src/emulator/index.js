@@ -133,13 +133,78 @@ export class Emulator extends RetroAppWrapper {
     this.analog = [[0, 0, 0, 0], [0, 0, 0, 0]];
 
     this.audioStarted = 0;
-    let audioArray = null;
+
+    // Fractional sample carry (for 800.25)
+    this.audioCarry = 0;
+
+    this.total = 0;
+    this.count = 0;
+
     this.audioCallback = (offset, length) => {
-      audioArray = new Uint8Array(window.Module.HEAP8.buffer, offset, 4096);
+      // length = incoming frames (mono)
+      //this.total += length;
+      this.count++;
+
+      if (this.count === 60) {
+        //console.log("total:", this.total);
+        this.total = 0;
+        this.count = 0;
+      }
+
+      // ---- target frames this callback ----
+      const exactFrames = 48015 / 60; // 800.25
+      const framesWithCarry = exactFrames + this.audioCarry;
+      const outFrames = Math.floor(framesWithCarry);
+      this.audioCarry = framesWithCarry - outFrames;
+
+      const inSamples = length;
+      // new Uint8Array(window.Module.HEAP8.buffer, offset, 4096);
+      const input = new Uint8Array(
+        window.Module.HEAP8.buffer,
+        offset,
+        inSamples
+      );
+
+      // ---- output buffer (stereo interleaved) ----
+      const outSamples = outFrames;
+      const output = new Int8Array(outSamples);
+
+      // ---- frame walking resampler (no timing drift) ----
+      const step = length / outFrames;
+
+      let srcFrame = 0;
+      for (let i = 0; i < outFrames; i++) {
+        const si = (srcFrame | 0);
+        output[i]     = input[si];
+        srcFrame += step;
+      }
+
+      this.total += (outSamples);
+
       this.audioProcessor.storeSoundCombinedInput(
-        audioArray, 1, length, 0, 255,
+        output,
+        1,
+        outSamples,
+        0,
+        255
       );
     };
+
+    // this.audioCallback = (offset, length) => {
+    //   this.total += length;
+    //   this.count = this.count + 1;
+
+    //   if (this.count === 60) {
+    //     console.log("total: " + this.total);
+    //     this.total = 0;
+    //     this.count = 0;
+    //   }
+
+    //   audioArray = new Uint8Array(window.Module.HEAP8.buffer, offset, 4096);
+    //   this.audioProcessor.storeSoundCombinedInput(
+    //     audioArray, 1, length, 0, 255,
+    //   );
+    // };
 
     // Set defaults if applicable
     if (Object.keys(app.mappings).length === 0) {
@@ -183,7 +248,12 @@ export class Emulator extends RetroAppWrapper {
   }
 
   createAudioProcessor() {
-    return new ScriptAudioProcessor(1, 48000).setDebug(this.debug);
+    return new ScriptAudioProcessor(
+      1,
+      48000,
+      8192 + 4096,
+      2048,
+    ).setDebug(this.debug);
   }
 
   createVisibilityMonitor() {

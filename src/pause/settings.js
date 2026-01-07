@@ -29,8 +29,8 @@ export class A5200SettingsEditor extends Component {
 
 
     const values = {
-      origBilinearMode: emulator.getPrefs().isBilinearEnabled(),
-      bilinearMode: emulator.getPrefs().isBilinearEnabled(),
+      origBilinearMode: emulator.getPrefs().getBilinearMode(),
+      bilinearMode: emulator.getPrefs().getBilinearMode(),
       origScreenSize: emulator.getPrefs().getScreenSize(),
       screenSize: emulator.getPrefs().getScreenSize(),
     }
@@ -66,6 +66,7 @@ export class A5200SettingsEditor extends Component {
       content: (
         <AppDisplaySettingsTab
           emulator={emulator}
+          isBilinearMode={true}
           isActive={tabIndex === tab}
           showOnScreenControls={showOnScreenControls}
           setFocusGridComps={setFocusGridComps}
@@ -100,8 +101,7 @@ export class A5200SettingsEditor extends Component {
 
           let change = false;
           if (values.origBilinearMode !== values.bilinearMode) {
-            emulator.getPrefs().setBilinearEnabled(values.bilinearMode);
-            emulator.updateBilinearFilter();
+            emulator.getPrefs().setBilinearMode(values.bilinearMode);
             change = true;
           }
           if (values.origScreenSize !== values.screenSize) {
@@ -115,6 +115,7 @@ export class A5200SettingsEditor extends Component {
 
           // Set the shader
           await this.shaderService.setShader(values.shaderId);
+          emulator.updateBilinearFilter();
 
           onClose();
         }}

@@ -542,6 +542,7 @@ export class Emulator extends RetroAppWrapper {
   }
 
   async onWriteAdditionalFiles() {
+    await super.onWriteAdditionalFiles();
     const { FS } = window;
     const props = this.getProps();
     const atariRom = props.atari5200_rom;

@@ -201,6 +201,7 @@ export class EmulatorPauseScreen extends Component {
           <A5200SettingsEditor
             emulator={emulator}
             onClose={closeCallback}
+            showOnScreenControls={true}
           />
         ) : null}
         {mode === ModeEnum.CHEATS ? (

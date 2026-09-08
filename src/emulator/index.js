@@ -3,6 +3,7 @@ import {
   Controllers,
   KeyCodeToControlMapping,
   RetroAppWrapper,
+  SCREEN_CONTROLS,
   ScriptAudioProcessor,
   Unzip,
   VisibilityChangeMonitor,
@@ -48,6 +49,12 @@ const DIGIT_8 = KEY_FLAG | 10;
 const DIGIT_9 = KEY_FLAG | 11;
 const MINUS = KEY_FLAG | 12;
 const EQUAL = KEY_FLAG | 13;
+// Opens the grid keypad screen directly -- keyboard equivalent of
+// LTRIG+RANALOG (see pollControls()), added alongside the existing
+// Enter/Start trigger (kept for backward compatibility) rather than
+// replacing it, matching the LTRIG+RANALOG/Control combo Jaguar and
+// Coleco use for cross-app consistency.
+const CONTROL_KEY = KEY_FLAG | 14;
 
 const BUTTONS = [
   { button: "a", cid: CIDS.A },
@@ -112,6 +119,8 @@ class AtariKeyCodeToControlMapping extends KeyCodeToControlMapping {
       [KCODES.DIGIT_9]: DIGIT_9,
       [KCODES.MINUS]: MINUS,
       [KCODES.EQUAL]: EQUAL,
+      [KCODES.CONTROL_LEFT]: CONTROL_KEY,
+      [KCODES.CONTROL_RIGHT]: CONTROL_KEY,
     });
   }
 }
@@ -131,6 +140,27 @@ export class Emulator extends RetroAppWrapper {
 
     this.inputs = [0, 0];
     this.analog = [[0, 0, 0, 0], [0, 0, 0, 0]];
+
+    // Guards the LTRIG+RANALOG grid-keypad trigger below from re-firing
+    // every frame while the combo stays held -- same pending-flag pattern
+    // Jaguar/Coleco use for their own virtual-keyboard/keypad triggers.
+    this.gamepadVkPending = false;
+    // Edge-detects CONTROL_KEY (rising edge starts the wait-for-release
+    // below, matching every other trigger's pattern).
+    this.controlKeyDown = false;
+    // Latched true if Shift joins Control before release -- see the
+    // CONTROL_KEY block in pollControls(). Read once at release to decide
+    // whether to open the grid keypad or redirect to the pause menu.
+    this.controlKeyEscalated = false;
+
+    // Drives the upper-right touch overlay (keypad/pause icons) -- same
+    // mechanism as Coleco/Jaguar's TouchOverlay: latch the first time each
+    // interaction type is observed, and react via checkOnScreenControls().
+    // See onFrame() for where the listeners actually get attached.
+    this.firstFrame = true;
+    this.touchEvent = false;
+    this.mouseEvent = false;
+    this.keyboardEvent = false;
 
     this.audioStarted = 0;
 
@@ -247,6 +277,21 @@ export class Emulator extends RetroAppWrapper {
     ]);
   }
 
+  // Force-closes the radial keypad the instant pause starts -- see
+  // App.js's hideRadialKeypad() for why this can't just rely on pause()
+  // stopping pollControls() from being called again.
+  onPause(p) {
+    super.onPause(p);
+    if (p && this.app && this.app.hideRadialKeypad) {
+      this.app.hideRadialKeypad();
+    }
+  }
+
+  // Base class default pauses on any tap anywhere on screen -- redundant
+  // (and disruptive) now that there's a dedicated Pause button in the
+  // touch overlay. Same override Coleco/Jaguar use for the same reason.
+  createTouchListener() {}
+
   createAudioProcessor() {
     return new ScriptAudioProcessor(
       1,
@@ -334,6 +379,22 @@ export class Emulator extends RetroAppWrapper {
 
     for (let i = 0; i < 2; i++) {
 
+      // Stick-driven radial keypad selector, mirroring Coleco/Jaguar for
+      // cross-app consistency. Not supported while twinStick is active --
+      // that mode already claims controller 0's right stick as a virtual
+      // second joystick, so there's no free stick left for keypad
+      // selection. Also suppressed while LTRIG is held, same as elsewhere,
+      // so reaching for the LTRIG+RANALOG grid-keypad combo below doesn't
+      // also pop the ring open.
+      if (this.app && this.app.updateRadialStick && !twinStick &&
+          !controllers.isControlDown(i, CIDS.LTRIG)) {
+        const analog1x = controllers.getAxisValue(i, 1, true);
+        const analog1y = controllers.getAxisValue(i, 1, false);
+        const confirmDown = controllers.isControlDown(i, CIDS.LBUMP) ||
+          controllers.isControlDown(i, CIDS.RBUMP);
+        this.app.updateRadialStick(i, analog1x, analog1y, confirmDown);
+      }
+
       let input = 0;
       let keyboardPressed = false;
 
@@ -367,6 +428,75 @@ export class Emulator extends RetroAppWrapper {
 
       if (!keypadInput) {
         if (i === 0) {
+          // LTRIG+RANALOG opens the grid keypad screen -- same gesture
+          // Jaguar/Coleco use for their own on-screen keypad, added here
+          // for cross-app consistency alongside the existing Start trigger
+          // (kept as-is, not replaced). Must be checked before CIDS.ESCAPE
+          // below, since this same combo also synthesizes CIDS.ESCAPE (see
+          // Controller.isControlDown's ESCAPE branch in
+          // @webrcade/app-common) -- intercepting it here first stops it
+          // from falling through to the default pause-menu-open behavior.
+          // Toggle-close is handled by ControllersScreen's own
+          // globalGamepadCallback (already closes on any ESC-type gamepad
+          // event, which this combo also produces), not here. Kept inside
+          // this existing i===0 block -- A5200's meta triggers (Escape/
+          // Start-opens-keypad below) have always been player-1-only here,
+          // unlike Coleco's; not changing that scope as a side effect of
+          // this pass.
+          if (controllers.isControlDown(i, CIDS.LTRIG) && controllers.isControlDown(i, CIDS.RANALOG)) {
+            if (!this.gamepadVkPending) {
+              this.gamepadVkPending = true;
+              controllers
+                .waitUntilControlReleased(i, CIDS.ESCAPE)
+                .then(() => {
+                  this.gamepadVkPending = false;
+                  if (this.pause(true)) {
+                    this.showControllers(i, swap);
+                  }
+                });
+            }
+            continue;
+          }
+
+          // Control key opens the grid keypad screen -- keyboard
+          // equivalent of LTRIG+RANALOG above, added alongside the
+          // existing Enter trigger (kept as-is). Waits for release before
+          // showing anything, matching every other trigger here (Enter/
+          // CIDS.START below, LTRIG+RANALOG above, CIDS.ESCAPE below)
+          // instead of acting immediately on keydown -- see Coleco/
+          // Jaguar's emulator/index.js for the full rationale (acting
+          // immediately exposed the freshly-opened screen to the very
+          // keystroke that opened it, and gave no clean way to redirect to
+          // the real pause menu if Shift joins mid-press). Toggle-close
+          // (pressing Control again once the keypad is already open) is
+          // handled by ControllersScreen's own handleKeyDownEvent,
+          // unrelated to this. Uses its own release-wait loop rather than
+          // controllers.waitUntilControlReleased() (used elsewhere here)
+          // because it also needs to keep sampling CIDS.ESCAPE (i.e. Shift
+          // joining Control) on every tick, not just check one condition
+          // at the end -- self-driven via setTimeout regardless, since
+          // pollControls() itself stops being called the moment pause(true)
+          // succeeds.
+          const controlDown = keyToControlMapping.isControlDown(CONTROL_KEY);
+          if (controlDown && !this.controlKeyDown && this.pause(true)) {
+            this.controlKeyEscalated = false;
+            const CONTROL_KEY_WAIT_INTERVAL = 50;
+            const waitForControlKeyRelease = () => {
+              if (keyToControlMapping.isControlDown(CIDS.ESCAPE)) {
+                this.controlKeyEscalated = true;
+              }
+              if (keyToControlMapping.isControlDown(CONTROL_KEY)) {
+                setTimeout(waitForControlKeyRelease, CONTROL_KEY_WAIT_INTERVAL);
+              } else if (this.controlKeyEscalated) {
+                this.showPauseMenu();
+              } else {
+                this.showControllers(0, swap);
+              }
+            };
+            setTimeout(waitForControlKeyRelease, CONTROL_KEY_WAIT_INTERVAL);
+          }
+          this.controlKeyDown = controlDown;
+
           if (controllers.isControlDown(i, CIDS.ESCAPE)) {
             if (this.pause(true)) {
               controllers
@@ -537,6 +667,98 @@ export class Emulator extends RetroAppWrapper {
         this.audioProcessor.start();
       } else {
         this.audioStarted++;
+      }
+    }
+
+    // Attaches the touch/mouse/keyboard interaction listeners once, on the
+    // real first frame (same timing Coleco/Jaguar use), and flips on the
+    // touch overlay's gating state (App.js's showCanvas()) so it can't
+    // render before the emulator actually exists.
+    if (!this.firstFrame) return;
+    this.firstFrame = false;
+
+    this.app.showCanvas();
+
+    setTimeout(() => {
+      const onTouch = () => { this.onTouchEvent() };
+      window.addEventListener("touchstart", onTouch);
+      window.addEventListener("touchend", onTouch);
+      window.addEventListener("touchcancel", onTouch);
+      window.addEventListener("touchmove", onTouch);
+
+      const onMouse = () => { this.onMouseEvent() };
+      window.addEventListener("mousedown", onMouse);
+      window.addEventListener("mouseup", onMouse);
+      window.addEventListener("mousemove", onMouse);
+
+      document.onkeydown = (e) => {
+        if (this.paused) return;
+        this.onKeyboardEvent(e);
+      };
+    }, 0);
+  }
+
+  onTouchEvent() {
+    if (!this.touchEvent) {
+      this.touchEvent = true;
+      this.checkOnScreenControls();
+    }
+  }
+
+  onMouseEvent() {
+    if (!this.mouseEvent) {
+      this.mouseEvent = true;
+      this.checkOnScreenControls();
+    }
+  }
+
+  onKeyboardEvent(e) {
+    if (e.code && !this.keyboardEvent) {
+      this.keyboardEvent = true;
+      this.checkOnScreenControls();
+    }
+  }
+
+  showTouchOverlay(show) {
+    const to = document.getElementById("touch-overlay");
+    if (to) {
+      to.style.display = show ? 'block' : 'none';
+    }
+  }
+
+  // Reacts immediately to a just-detected interaction (see
+  // onTouchEvent()/onMouseEvent()/onKeyboardEvent() above) -- only SC_AUTO
+  // needs to do anything here, since SC_ON/SC_OFF are already handled
+  // unconditionally by updateOnScreenControls() at startup and whenever
+  // the Settings preference itself changes.
+  checkOnScreenControls() {
+    const controls = this.prefs.getScreenControls();
+    if (controls === SCREEN_CONTROLS.SC_AUTO) {
+      setTimeout(() => {
+        this.showTouchOverlay(true);
+        this.app.forceRefresh();
+      }, 0);
+    }
+  }
+
+  // Broader lifecycle hook (base class calls this once at real startup
+  // with initial=true, and the Settings screen calls it again whenever
+  // "Screen Controls" changes) -- unlike checkOnScreenControls(), this has
+  // to explicitly handle all three preference values, and skips SC_AUTO
+  // entirely on the initial call so the overlay doesn't flash before any
+  // real interaction has happened yet.
+  updateOnScreenControls(initial = false) {
+    const controls = this.prefs.getScreenControls();
+    if (controls === SCREEN_CONTROLS.SC_OFF) {
+      this.showTouchOverlay(false);
+    } else if (controls === SCREEN_CONTROLS.SC_ON) {
+      this.showTouchOverlay(true);
+    } else if (controls === SCREEN_CONTROLS.SC_AUTO) {
+      if (!initial) {
+        setTimeout(() => {
+          this.showTouchOverlay(this.touchEvent || this.mouseEvent);
+          this.app.forceRefresh();
+        }, 0);
       }
     }
   }

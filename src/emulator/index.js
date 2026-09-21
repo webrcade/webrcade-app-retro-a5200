@@ -506,10 +506,14 @@ export class Emulator extends RetroAppWrapper {
             }
           }
 
-          if (controllers.isControlDown(i, CIDS.START)) {
+          // WRC - per docs/control-mapping-audit.md's GRP3 target: Select
+          // opens the keypad (bonus/legacy path), Start maps to the real
+          // Atari Start button - this used to be swapped (Start opened the
+          // keypad, Select mapped to JST_START), fixed to match the doc.
+          if (controllers.isControlDown(i, CIDS.SELECT)) {
             if (this.pause(true)) {
               controllers
-                .waitUntilControlReleased(i, CIDS.START)
+                .waitUntilControlReleased(i, CIDS.SELECT)
                 .then(() => this.showControllers(i, swap));
               return;
             }
@@ -527,7 +531,7 @@ export class Emulator extends RetroAppWrapper {
             input |= JST_LEFT;
           }
 
-          if (controllers.isControlDown(i, CIDS.SELECT)) {
+          if (controllers.isControlDown(i, CIDS.START)) {
             input |= JST_START;
           }
 

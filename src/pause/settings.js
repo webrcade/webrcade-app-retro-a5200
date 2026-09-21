@@ -33,6 +33,8 @@ export class A5200SettingsEditor extends Component {
       bilinearMode: emulator.getPrefs().getBilinearMode(),
       origScreenSize: emulator.getPrefs().getScreenSize(),
       screenSize: emulator.getPrefs().getScreenSize(),
+      origScreenControls: emulator.getPrefs().getScreenControls(),
+      screenControls: emulator.getPrefs().getScreenControls(),
     }
 
     this.shaderService = this.props.emulator.getShadersService();
@@ -107,6 +109,11 @@ export class A5200SettingsEditor extends Component {
           if (values.origScreenSize !== values.screenSize) {
             emulator.getPrefs().setScreenSize(values.screenSize);
             emulator.updateScreenSize();
+            change = true;
+          }
+          if (values.origScreenControls !== values.screenControls) {
+            emulator.getPrefs().setScreenControls(values.screenControls);
+            emulator.updateOnScreenControls();
             change = true;
           }
           if (change) {
